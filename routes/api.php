@@ -17,5 +17,6 @@ Route::prefix('clients')->group(function(){
 });
 
 Route::prefix('products')->group(function(){
-    Route::get('/index',[ProductsController::class,'index']);
+    Route::get('/',[ProductsController::class,'index']);
+    Route::post('/pairing',[ProductsController::class,'pairingProducts']);
 });
