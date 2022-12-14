@@ -188,10 +188,14 @@ class ProductsController extends Controller
             $famart = trim($art["FAMILIA"]);
             $cat = trim($art["CATEGORIA"]);
             $date_format = date("d/m/Y");
-            $barcode = trim($art["CB"]);
-            $cost = $art["COSTO"];
-            $medidas = trim($art["MEDIDAS NAV"]);
-            $luces = trim($art["#LUCES"]);
+            // $barcode = trim($art["CB"]);
+            if(isset($art["CB"])){$barcode = trim($art["CB"]);}else{$barcode = null;}
+            // $cost = $art["COSTO"];
+            if(isset($art["COSTO"])){$cost = $art["COSTO"];}else{$cost = 0;}
+            // $medidas = trim($art["MEDIDAS NAV"]);
+            if(isset($art["MEDIDAS NAV"])){$medidas = trim($art["MEDIDAS NAV"]);}else{$medidas = null;}
+            // $luces = trim($art["#LUCES"]);
+            if(isset($art["#LUCES"])){$luces = trim($art["#LUCES"]);}else{$luces = null;}
             $PXC = trim($art["PXC"]);
             $refart = trim($art["REFERENCIA"]);
             $cp3art = trim($art["UNIDA MED COMPRA"]);
