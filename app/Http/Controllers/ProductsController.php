@@ -105,4 +105,187 @@ class ProductsController extends Controller
             }
     }
 
+    public function replaceProducts(Request $request){
+        $factusol=[];
+        $products = $request->product;
+        foreach($products as $product){
+            $original = "'".$product['original']."'";
+            $replace = "'".$product['replace']."'";
+            try{
+            $upda = "UPDATE F_LFA SET ARTLFA = $replace WHERE ARTLFA = $original";
+            $exec = $this->conn->prepare($upda);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en facturas por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en facturas";}
+            $updsto = "UPDATE F_LFR SET ARTLFR = $replace WHERE ARTLFR = $original";
+            $exec = $this->conn->prepare($updsto);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en facturas recibidas por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en facturas recibidas";}
+            $updlta = "UPDATE F_LEN SET ARTLEN = $replace WHERE ARTLEN = $original";
+            $exec = $this->conn->prepare($updlta);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en entradas por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en entradas";}
+            $updltr = "UPDATE F_LTR SET ARTLTR = $replace WHERE ARTLTR = $original";
+            $exec = $this->conn->prepare($updltr);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en traspasos por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en traspasos";}
+            $updcin = "UPDATE F_LFB SET ARTLFB = $replace WHERE ARTLFB = $original";
+            $exec = $this->conn->prepare($updcin);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en abonos por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en abonos";}
+            $upddev = "UPDATE F_LFD SET ARTLFD = $replace WHERE ARTLFD = $original";
+            $exec = $this->conn->prepare($upddev);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." articulos remplazado en devoluciones por ".$product['replace'];}else{$factusol[]=$product['original']." error en remplazar en devoluciones";}
+            $deleteart = "DELETE FROM F_ART WHERE CODART = $original";
+            $exec = $this->conn->prepare($deleteart);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." eliminado en Articulos";}else{$factusol[]=$product['original']." error sl eliminar en Articulos";}
+            $deletetar = "DELETE FROM F_LTA WHERE ARTLTA = $original";
+            $exec = $this->conn->prepare($deletetar);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." eliminado en Precios";}else{$factusol[]=$product['original']." error sl eliminar en Precios";}
+            $deletesto = "DELETE FROM F_STO WHERE ARTSTO = $original";
+            $exec = $this->conn->prepare($deletesto);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." eliminado en Stock";}else{$factusol[]=$product['original']." error sl eliminar en Stock";}
+            $deleteean = "DELETE FROM F_EAN WHERE ARTEAN = $original";
+            $exec = $this->conn->prepare($deleteean);
+            $exec -> execute();
+            if($exec){$factusol[]=$product['original']." eliminado en Familiarizados";}else{$factusol[]=$product['original']." error sl eliminar en Familiarizados";}
+            }catch (\PDOException $e){ die($e->getMessage());}
+        }
+        return response()->json($factusol);
+
+      
+    }
+    
+    public function highProducts(Request $request){
+        $insertados=[];
+        $actualizados=[];
+        $fail=[
+            "categoria"=>[],
+            "codigo_barras"=>[],
+            "codigo_corto"=>[], 
+        ];
+        $almacenes ="SELECT CODALM FROM F_ALM";
+        $exec = $this->conn->prepare($almacenes);
+        $exec -> execute();
+        $fil=$exec->fetchall(\PDO::FETCH_ASSOC);
+
+        $tari ="SELECT CODTAR FROM F_TAR";
+        $exec = $this->conn->prepare($tari);
+        $exec -> execute();
+        $filtar=$exec->fetchall(\PDO::FETCH_ASSOC);
+
+        $articulos= $request->product;
+        
+        foreach($articulos as $art){
+            $codigo = trim($art["CODIGO"]);
+            $deslarga = trim($art["DESCRIPCION"]);
+            $desgen = trim(substr($art["DESCRIPCION"],0,50));
+            $deset = trim(substr($art["DESCRIPCION"],0,30));
+            $destic = trim(substr($art["DESCRIPCION"],0,20));
+            $famart = trim($art["FAMILIA"]);
+            $cat = trim($art["CATEGORIA"]);
+            $date_format = date("d/m/Y");
+            $barcode = trim($art["CB"]);
+            $cost = $art["COSTO"];
+            $medidas = trim($art["MEDIDAS NAV"]);
+            $luces = trim($art["#LUCES"]);
+            $PXC = trim($art["PXC"]);
+            $refart = trim($art["REFERENCIA"]);
+            $cp3art = trim($art["UNIDA MED COMPRA"]);
+
+            $codbar = $barcode == null ? "'"."'" : $barcode;
+
+            $articulo  = [              
+                $codigo,
+                $codbar,
+                $famart,
+                $desgen,
+                $deset,
+                $destic,
+                $deslarga,
+                $art["PXC"],
+                $art["CODIGO CORTO"],
+                $art["PROVEEDOR"],
+                $refart,
+                $art["FABRICANTE"],
+                $cost,
+                $date_format,
+                $date_format,
+                $art["PXC"],
+                1,
+                1,
+                1,
+                $cat,
+                $luces,
+                $cp3art,
+                $art["PRO RES"],
+                $medidas,
+                0,
+                "Peso"
+            ];
+
+
+
+            $caty = DB::table('product_categories as PC')->join('product_categories as PF', 'PF.id', '=','PC.root')->where('PC.alias', $cat)->where('PF.alias', $famart)->value('PC.id');
+            if($caty){
+                $sqlart = "SELECT CODART, EANART FROM F_ART WHERE CODART = ?";
+                $exec = $this->conn->prepare($sqlart);
+                $exec -> execute([$codigo]);
+                $arti=$exec->fetch(\PDO::FETCH_ASSOC);
+     
+                if($arti){
+                    $update = "UPDATE F_ART SET FAMART = "."'".$famart."'"." , CP1ART = "."'".$cat."'"."  , FUMART = "."'".$date_format."'".", EANART = ".$codbar.", PCOART = ".$cost.", UPPART = ".$PXC." , EQUART = ".$PXC.", REFART = "."'".$refart."'"."  , CP3ART = "."'".$cp3art."'"."  WHERE CODART = ? "; 
+                    $exec = $this->conn->prepare($update);
+                    $exec -> execute([$codigo]);
+                    $actualizados[]="Se actualizo el modelo  ".$codigo." con codigo de barras ".$barcode;
+                }else{
+                    if($barcode != null){
+                    $codigob = "SELECT CODART, EANART FROM F_ART WHERE EANART = "."'".$barcode."'";
+                    $exec = $this->conn->prepare($codigob);
+                    $exec -> execute();
+                    $barras=$exec->fetch(\PDO::FETCH_ASSOC);
+                    if($barras){$fail['codigo_barras'][]="El codigo de barras ".$barcode." esta otorgado a el articulo ".$barras['CODART']." no se pueden duplicar";}
+                    }else{
+                        
+                        $codigoc = "SELECT CODART, CCOART FROM F_ART WHERE CCOART = ".$art["CODIGO CORTO"];
+                        $exec = $this->conn->prepare($codigoc);
+                        $exec -> execute();
+                        $corto=$exec->fetch(\PDO::FETCH_ASSOC);
+                    
+                        if($corto){$fail['codigo_corto'][]="El codigo corto ".$art["CODIGO CORTO"]." esta otorgado al articulo ".$corto['CODART']." no se pueden duplicar";
+                        }else{
+                            $insert = "INSERT INTO F_ART (CODART,EANART,FAMART,DESART,DEEART,DETART,DLAART,EQUART,CCOART,PHAART,REFART,FTEART,PCOART,FALART,FUMART,UPPART,CANART,CAEART,UMEART,CP1ART,CP2ART,CP3ART,CP4ART,CP5ART,MPTART,UEQART) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                            $exec = $this->conn->prepare($insert);
+                            $exec -> execute($articulo);
+                            foreach($fil as $row){
+                                $alm=$row['CODALM'];
+                                $insertsto = "INSERT INTO F_STO (ARTSTO,ALMSTO,MINSTO,MAXSTO,ACTSTO,DISSTO) VALUES (?,?,?,?,?,?) ";
+                                $exec = $this->conn->prepare($insertsto);
+                                $exec -> execute([$codigo,$alm,0,0,0,0]);
+                            }
+                            foreach($filtar as $tar){
+                                $price =$tar['CODTAR'];
+                                $insertlta = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES (?,?,?,?) ";
+                                $exec = $this->conn->prepare($insertlta);
+                                $exec -> execute([$price,$codigo,0,0]);
+                            }
+                            $insertados[]="Se inserto el codigo ".$codigo."con exito";
+                        }
+                    }
+                } 
+            }else{$fail['categoria'][]="no existe la categoria ".$cat." de la familia ".$famart." de el producto ".$codigo;}    
+        }
+        $res = [
+            "insertados"=>$insertados,
+            "acutalizados"=>$actualizados,
+            "fail"=>$fail
+        ];
+        return response()->json($res);
+
+    }
+
+    
 }
