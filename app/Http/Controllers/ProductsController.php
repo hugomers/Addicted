@@ -201,6 +201,8 @@ class ProductsController extends Controller
             $cp3art = trim($art["UNIDA MED COMPRA"]);
 
             $codbar = $barcode == null ? "'"."'" : $barcode;
+            $luz = $luces == null ? "'"."'" : $luces;
+            $med = $medidas == null ? "'"."'" : $medidas;
 
             $articulo  = [              
                 $codigo,
@@ -223,10 +225,10 @@ class ProductsController extends Controller
                 1,
                 1,
                 $cat,
-                $luces,
+                $luz,
                 $cp3art,
                 $art["PRO RES"],
-                $medidas,
+                $med,
                 0,
                 "Peso"
             ];
@@ -252,7 +254,7 @@ class ProductsController extends Controller
                     $exec -> execute();
                     $barras=$exec->fetch(\PDO::FETCH_ASSOC);
                     if($barras){$fail['codigo_barras'][]="El codigo de barras ".$barcode." esta otorgado a el articulo ".$barras['CODART']." no se pueden duplicar";}
-                    }else{
+                    }
                         
                         $codigoc = "SELECT CODART, CCOART FROM F_ART WHERE CCOART = ".$art["CODIGO CORTO"];
                         $exec = $this->conn->prepare($codigoc);
@@ -278,7 +280,6 @@ class ProductsController extends Controller
                             }
                             $insertados[]="Se inserto el codigo ".$codigo."con exito";
                         }
-                    }
                 } 
             }else{$fail['categoria'][]="no existe la categoria ".$cat." de la familia ".$famart." de el producto ".$codigo;}    
         }
@@ -291,5 +292,111 @@ class ProductsController extends Controller
 
     }
 
+    public function highPrices(Request $request){
+        $priceslocal = $request->prices;
+        $goals=[];
+        $fails=[];
+        $date_format = date("d/m/Y");
+        foreach($priceslocal as $price){
+
+
+            
+            $centro = "UPDATE F_LTA SET PRELTA = ". $price['CENTRO']." WHERE ARTLTA = ? AND TARLTA = 6";
+            $exec = $this->conn->prepare($centro);
+            $exec -> execute([$price["MODELO"]]);
+            
+           
+            $especial = "UPDATE F_LTA SET PRELTA = ". $price['ESPECIAL']." WHERE ARTLTA = ? AND TARLTA = 5";
+            $exec = $this->conn->prepare($especial);
+            $exec -> execute([$price["MODELO"]]);
+           
+           
+            $caja = "UPDATE F_LTA SET PRELTA = ". $price['CAJA']." WHERE ARTLTA = ? AND TARLTA = 4";
+            $exec = $this->conn->prepare($caja);
+            $exec -> execute([$price["MODELO"]]);
+           
+            
+            $docena = "UPDATE F_LTA SET PRELTA = ". $price['DOCENA']." WHERE ARTLTA = ? AND TARLTA = 3";
+            $exec = $this->conn->prepare($docena);
+            $exec -> execute([$price["MODELO"]]);
+            
+            
+            $mayoreo = "UPDATE F_LTA SET PRELTA = ". $price['MAYOREO']." WHERE ARTLTA = ? AND TARLTA = 2 ";
+            $exec = $this->conn->prepare($mayoreo);
+            $exec -> execute([$price["MODELO"]]);
+           
+            
+            $menudeo = "UPDATE F_LTA SET PRELTA = ". $price['MENUDEO']." WHERE ARTLTA = ? AND TARLTA = 1";
+            $exec = $this->conn->prepare($menudeo);
+            $exec -> execute([$price["MODELO"]]);
+           
+            
+            $costo = "UPDATE F_ART SET PCOART = ". $price['AAA']." , FUMART = ".$date_format." WHERE CODART = ? ";
+            $exec = $this->conn->prepare($costo);
+            $exec -> execute([$price["MODELO"]]);
+            if($exec){$goals['factusol'][]=$price['MODELO']." Precios Modificados factusol";}else{$fails['factusol']= $price['MODELO']." error al actualizar factusol";}
+            
+
+        
+        }
+        $res = [
+            "goals"=>$goals,
+            "fail"=>$fails,
+        ];
+        return response()->json($res);
+    }
+
+    public function highPricesForeign(Request $request){
+        $pricesforeign = $request->prices;
+        $goals=[];
+        $fails=[];
+        $date_format = date("d/m/Y");
+        foreach($pricesforeign as $price){
+
+            
+            $centro = "UPDATE F_LTA SET PRELTA = ". $price['CENTRO']." WHERE ARTLTA = ? AND TARLTA = 6";
+            $exec = $this->conn->prepare($centro);
+            $exec -> execute([$price["MODELO"]]);
+   
+           
+            $especial = "UPDATE F_LTA SET PRELTA = ". $price['ESPECIAL']." WHERE ARTLTA = ? AND TARLTA = 5";
+            $exec = $this->conn->prepare($especial);
+            $exec -> execute([$price["MODELO"]]);
+
+           
+            $caja = "UPDATE F_LTA SET PRELTA = ". $price['CAJA']." WHERE ARTLTA = ? AND TARLTA = 4";
+            $exec = $this->conn->prepare($caja);
+            $exec -> execute([$price["MODELO"]]);
+         
+            
+            $docena = "UPDATE F_LTA SET PRELTA = ". $price['DOCENA']." WHERE ARTLTA = ? AND TARLTA = 3";
+            $exec = $this->conn->prepare($docena);
+            $exec -> execute([$price["MODELO"]]);
+           
+            
+            $mayoreo = "UPDATE F_LTA SET PRELTA = ". $price['MAYOREO']." WHERE ARTLTA = ? AND TARLTA = 2";
+            $exec = $this->conn->prepare($mayoreo);
+            $exec -> execute([$price["MODELO"]]);
+     
+            
+            $menudeo = "UPDATE F_LTA SET PRELTA = ". $price['MENUDEO']." WHERE ARTLTA = ? AND TARLTA = 1";
+            $exec = $this->conn->prepare($menudeo);
+            $exec -> execute([$price["MODELO"]]);
+        
+            
+            $costo = "UPDATE F_ART SET PCOART = ". $price['COSTO']." , FUMART = ".$date_format." WHERE CODART = ? ";
+            $exec = $this->conn->prepare($costo);
+            $exec -> execute([$price["MODELO"]]);
+            
+            if($exec){$goals['factusol'][]=$price['MODELO']." Precios Modificados factusol";}else{$fails['factusol']= $price['MODELO']." error al actualizar factusol";}
+
+        
+        }
+        $res = [
+            "goals"=>$goals,
+            "fail"=>$fails,
+        ];
+        return response()->json($res);
+    }
     
 }
