@@ -588,7 +588,6 @@ class ProductsController extends Controller
     public function insertPubProducts(request $request){
         $actualizados = [];
         $insertados = [];
-        $date = date("Y/m/d H:i");
         $date_format = date("d/m/Y");
         $articulos = $request->articulos;
         $margen = 1.05;
@@ -602,7 +601,6 @@ class ProductsController extends Controller
             $exec = $this->conn->prepare($artexs);
             $exec -> execute([$art['CODART']]);
             $cossis=$exec->fetch(\PDO::FETCH_ASSOC);
-            
             if($cossis){
                 $articulo=$art['CODART'];
                 $costo = round($art['PCOART']*$margen,2);
@@ -770,5 +768,152 @@ class ProductsController extends Controller
         return response()->json($res);
     }
  
+    public function replyProducts(Request $request){
+        $articulos = $request->articulos;
+        $date_format = date("d/m/Y");
+        $actualizados = [];
+        $insertados = [];
+        $almacenes ="SELECT CODALM FROM F_ALM";
+        $exec = $this->conn->prepare($almacenes);
+        $exec -> execute();
+        $fil=$exec->fetchall(\PDO::FETCH_ASSOC);
+
+        foreach($articulos as $articulo){
+            $producto=[
+                $articulo["EANART"],
+                $articulo["DESART"],
+                $articulo["DEEART"],
+                $articulo["DETART"],
+                $articulo["DLAART"],
+                $articulo["EQUART"],
+                $articulo["CCOART"],
+                $articulo["PCOART"],
+                $articulo["PHAART"],
+                $articulo["REFART"],
+                $articulo["FUMART"],
+                $articulo["UPPART"],
+                $articulo["UMEART"],
+                $articulo["CP1ART"],
+                $articulo["CP2ART"],
+                $articulo["CP3ART"],
+                $articulo["CP4ART"],
+                $articulo["CP5ART"],
+                $articulo["NPUART"],
+                $articulo["NIAART"],
+                $articulo["DSCART"],
+                $articulo["MPTART"],
+                $articulo["UEQART"],
+                $articulo["CAEART"],
+                $articulo["CANART"],
+                $articulo['CODART']
+            ];
+            $sql = "SELECT CODART FROM F_ART WHERE CODART = ?";
+            $exec = $this->conn->prepare($sql);
+            $exec -> execute([$articulo['CODART']]);
+            $artic=$exec->fetch(\PDO::FETCH_ASSOC);
+            if($artic){
+                $upd = "UPDATE F_ART SET EANART = ? ,DESART = ? ,DEEART = ? ,DETART = ? ,DLAART = ? ,EQUART = ? ,CCOART = ? ,PCOART = ? ,PHAART = ? ,REFART = ? ,FUMART = ? ,UPPART = ? ,UMEART = ? ,CP1ART = ? ,CP2ART = ? ,CP3ART = ? ,CP4ART = ? ,CP5ART = ? ,NPUART = ? ,NIAART = ? ,DSCART = ? ,MPTART = ? ,UEQART = ? ,CAEART = ? ,CANART = ? WHERE CODART = ?";
+                $exec = $this->conn->prepare($upd);
+                $exec -> execute($producto);
+                $actualizados[]="Articulo ".$articulo['CODART']." actualizado";
+            }else{
+                $ins = "INSERT INTO F_ART (EANART,DESART,DEEART,DETART,DLAART,EQUART,CCOART,PCOART,PHAART,REFART,FUMART,UPPART,UMEART,CP1ART,CP2ART,CP3ART,CP4ART,CP5ART,NPUART,NIAART,DSCART,MPTART,UEQART,CAEART,CANART,CODART
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                $exec = $this->conn->prepare($ins);
+                $exec -> execute($producto);
+                foreach($fil as $row){
+                    $alm=$row['CODALM'];
+                    $insertsto = "INSERT INTO F_STO (ARTSTO,ALMSTO,MINSTO,MAXSTO,ACTSTO,DISSTO) VALUES (?,?,?,?,?,?) ";
+                    $exec = $this->conn->prepare($insertsto);
+                    $exec -> execute([$articulo["CODART"],$alm,0,0,0,0]);
+                }
+                $insertados[]="Se inserto el modelo ".$articulo["CODART"];
+            }
+        }
+        $res = [
+            "insertados"=>$insertados,
+            "actualizados"=>$actualizados
+        ];
+        return response()->json($res);
+    }
+
+    public function replyProductsPrices(Request $request){
+        $prices = $request->prices;
+        $actualizados = [];
+        $insertados = [];
+        foreach($prices as $price){
+
+            $articulo = $price['CODIGO'];
+            $centro = $price['CENTRO'];
+            $especial = $price['ESPECIAL'];
+            $caja = $price['CAJA'];
+            $docena = $price['DOCENA'];
+            $mayoreo = $price['MAYOREO'];
+            $menudeo = $price['MENUDEO'];
+            $exispr = "SELECT ARTLTA FROM F_LTA WHERE ARTLTA = ?";
+            $exec = $this->conn->prepare($exispr);
+            $exec -> execute([$articulo]);
+            $cossis=$exec->fetch(\PDO::FETCH_ASSOC);
+            if($cossis){
+                
+                $cen = "UPDATE F_LTA SET PRELTA = ".$centro." WHERE ARTLTA = ?  AND TARLTA = 6";
+                $exec = $this->conn->prepare($cen);
+                $exec -> execute([$articulo]);
+    
+                $espe = "UPDATE F_LTA SET PRELTA = ".$especial." WHERE ARTLTA = ? AND TARLTA = 5";
+                $exec = $this->conn->prepare($espe);
+                $exec -> execute([$articulo]);
+                
+                $caj = "UPDATE F_LTA SET PRELTA = ".$caja." WHERE ARTLTA = ? AND TARLTA = 4";
+                $exec = $this->conn->prepare($caj);
+                $exec -> execute([$articulo]);
+            
+                $doc = "UPDATE F_LTA SET PRELTA = ".$docena." WHERE ARTLTA = ? AND TARLTA = 3";
+                $exec = $this->conn->prepare($doc);
+                $exec -> execute([$articulo]);
+        
+                $mayo = "UPDATE F_LTA SET PRELTA = ".$mayoreo." WHERE ARTLTA = ?  AND TARLTA = 2";
+                $exec = $this->conn->prepare($mayo);
+                $exec -> execute([$articulo]);
+            
+                $menu = "UPDATE F_LTA SET PRELTA = ".$menudeo." WHERE ARTLTA = ? AND TARLTA = 1";
+                $exec = $this->conn->prepare($menu);
+                $exec -> execute([$articulo]);
+                $actualizados[]="Se actuzalizaron precios de el articulo ".$articulo;
+            }else{
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([6,$articulo,0,$centro]);
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([5,$articulo,0,$especial]);
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([4,$articulo,0,$caja]);
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([3,$articulo,0,$docena]);
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([2,$articulo,0,$mayoreo]);
+
+                $inscen = "INSERT INTO F_LTA (TARLTA,ARTLTA,MARLTA,PRELTA) VALUES  (?,?,?,?)";
+                $exec = $this->conn->prepare($inscen);
+                $exec -> execute([1,$articulo,0,$menudeo]);
+                $insertados[]="Precios insertados del articulo ".$articulo;
+            }
+        }
+        $res = [
+            "actualizados"=>$actualizados,
+            "insertados"=>$insertados
+        ];
+        return response()->json($res);
+    }
+
 }    
 

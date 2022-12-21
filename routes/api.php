@@ -27,4 +27,6 @@ Route::prefix('products')->group(function(){
     Route::post('/insertPricesPub',[ProductsController::class,'insertPricesPub']);
     Route::post('/insertPubProducts',[ProductsController::class,'insertPubProducts']);
     Route::post('/insertPricesProductPub',[ProductsController::class,'insertPricesProductPub']);
+    Route::post('/replyProducts',[ProductsController::class,'replyProducts']);
+    Route::post('/replyProductsPrices',[ProductsController::class,'replyProductsPrices']);
 });
