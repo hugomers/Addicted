@@ -23,4 +23,8 @@ Route::prefix('products')->group(function(){
     Route::post('/highProducts',[ProductsController::class,'highProducts']);
     Route::post('/highPrices',[ProductsController::class,'highPrices']);
     Route::post('/highPricesForeign',[ProductsController::class,'highPricesForeign']);
+    Route::post('/insertPub',[ProductsController::class,'insertPub']);
+    Route::post('/insertPricesPub',[ProductsController::class,'insertPricesPub']);
+    Route::post('/insertPubProducts',[ProductsController::class,'insertPubProducts']);
+    Route::post('/insertPricesProductPub',[ProductsController::class,'insertPricesProductPub']);
 });
