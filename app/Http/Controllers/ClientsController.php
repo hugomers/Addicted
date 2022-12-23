@@ -17,11 +17,11 @@ class ClientsController extends Controller
     public function replyClients(Request $request){//recibe los datos de la api Diller alojada en servidor Cedis 
         $created = [];//contenedor de creados
         $fail = [];//contendero de fallidos
-        $cli = $request->client;//se obtienen los proveedores
+        $cli = $request->client;//se obtienen los clientes
         foreach($cli as $client){//se hace un foreach de los datos recibidos
-        $delete = "DELETE FROM F_CLI WHERE CODCLI = ?";//se eliminan los proveedores existentes con el codigo recibido
+        $delete = "DELETE FROM F_CLI WHERE CODCLI = ?";//se eliminan los clientes existentes con el codigo recibido
         $exec = $this->conn->prepare($delete);
-        $exec ->execute([$client["CODCLI"]]);//se manda el codigo de el proveedor
+        $exec ->execute([$client["CODCLI"]]);//se manda el codigo de el clientes   
         $insert = "INSERT INTO F_CLI (CODCLI,CCOCLI,NIFCLI,NOFCLI,NOCCLI,DOMCLI,POBCLI,CPOCLI,PROCLI,TELCLI,AGECLI,FPACLI,TARCLI,TCLCLI,FALCLI,NVCCLI,DOCCLI,IFICLI,FUMCLI) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";//se prepara el query para insertar los proveedores recibidos
         $exec = $this->conn->prepare($insert);
         $exec ->execute([//se insertan los datos recibidos
@@ -52,5 +52,29 @@ class ClientsController extends Controller
             "fallido"=>$fail
         ];
         return response()->json($res,200);//se retorna respuesta
+    }
+
+    public function conditionSpecial(Request $request){
+        $fil = $request->special;
+        $client = $request->client;
+        $clientms =  "DELETE FROM F_PRC WHERE CLIPRC = $client";
+        $exec = $this->conn->prepare($clientms);
+        $exec -> execute();
+            foreach($fil as $con){
+                $clsd =[
+                    $con['CLIPRC'],
+                    $con['ARTPRC'],
+                    $con['PREPRC'],
+                    $con['TIPPRC'],
+                    $con['AOFPRC'],
+                ];
+            $inset="INSERT INTO F_PRC (CLIPRC,ARTPRC,PREPRC,TIPPRC,AOFPRC) VALUES(?,?,?,?,?)";
+            $exec = $this->conn->prepare($inset);
+            $exec -> execute($clsd);
+
+
+        }
+        return response()->json("Generado Correctamente");
+     
     }
 }

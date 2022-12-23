@@ -14,6 +14,7 @@ Route::prefix('providers')->group(function(){
 
 Route::prefix('clients')->group(function(){
     Route::post('/reply',[ClientsController::class,'replyClients']);
+    Route::post('/conditionSpecial',[ClientsController::class,'conditionSpecial']);
 });
 
 Route::prefix('products')->group(function(){
@@ -29,4 +30,5 @@ Route::prefix('products')->group(function(){
     Route::post('/insertPricesProductPub',[ProductsController::class,'insertPricesProductPub']);
     Route::post('/replyProducts',[ProductsController::class,'replyProducts']);
     Route::post('/replyProductsPrices',[ProductsController::class,'replyProductsPrices']);
+    Route::post('/additionalsBarcode',[ProductsController::class,'additionalsBarcode']);
 });

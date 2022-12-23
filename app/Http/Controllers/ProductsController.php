@@ -15,14 +15,14 @@ class ProductsController extends Controller
         }else{ die("$access no es un origen de datos valido."); }
     }
 
-    public function index(){
-        $articulos=[];
-        $proced = "SELECT CODART  FROM F_ART";
+    public function index(){//se envia articulos para su comparacion con cedis y mysql, aplica solo para sucursales con tipo de precio 2
+        $articulos=[];//contenedor de articulos
+        $proced = "SELECT CODART  FROM F_ART";//query para mostrar articulos
         $exec = $this->conn->prepare($proced);
         $exec -> execute();
         $fil=$exec->fetchall(\PDO::FETCH_ASSOC);
-        foreach($fil as $row){
-            $articulos[]="'".$row['CODART']."'";
+        foreach($fil as $row){//foreach de articulos
+            $articulos[]="'".$row['CODART']."'";//se obtiene el codigo de los articulos concatenads con comilla simple para su procesamiento
         }
         return response()->json($articulos,200);
     }
@@ -805,6 +805,7 @@ class ProductsController extends Controller
                 $articulo["UEQART"],
                 $articulo["CAEART"],
                 $articulo["CANART"],
+                $articulo['FAMART'],
                 $articulo['CODART']
             ];
             $sql = "SELECT CODART FROM F_ART WHERE CODART = ?";
@@ -812,12 +813,12 @@ class ProductsController extends Controller
             $exec -> execute([$articulo['CODART']]);
             $artic=$exec->fetch(\PDO::FETCH_ASSOC);
             if($artic){
-                $upd = "UPDATE F_ART SET EANART = ? ,DESART = ? ,DEEART = ? ,DETART = ? ,DLAART = ? ,EQUART = ? ,CCOART = ? ,PCOART = ? ,PHAART = ? ,REFART = ? ,FUMART = ? ,UPPART = ? ,UMEART = ? ,CP1ART = ? ,CP2ART = ? ,CP3ART = ? ,CP4ART = ? ,CP5ART = ? ,NPUART = ? ,NIAART = ? ,DSCART = ? ,MPTART = ? ,UEQART = ? ,CAEART = ? ,CANART = ? WHERE CODART = ?";
+                $upd = "UPDATE F_ART SET EANART = ? ,DESART = ? ,DEEART = ? ,DETART = ? ,DLAART = ? ,EQUART = ? ,CCOART = ? ,PCOART = ? ,PHAART = ? ,REFART = ? ,FUMART = ? ,UPPART = ? ,UMEART = ? ,CP1ART = ? ,CP2ART = ? ,CP3ART = ? ,CP4ART = ? ,CP5ART = ? ,NPUART = ? ,NIAART = ? ,DSCART = ? ,MPTART = ? ,UEQART = ? ,CAEART = ? ,CANART = ?, FAMART = ? WHERE CODART = ?";
                 $exec = $this->conn->prepare($upd);
                 $exec -> execute($producto);
                 $actualizados[]="Articulo ".$articulo['CODART']." actualizado";
             }else{
-                $ins = "INSERT INTO F_ART (EANART,DESART,DEEART,DETART,DLAART,EQUART,CCOART,PCOART,PHAART,REFART,FUMART,UPPART,UMEART,CP1ART,CP2ART,CP3ART,CP4ART,CP5ART,NPUART,NIAART,DSCART,MPTART,UEQART,CAEART,CANART,CODART
+                $ins = "INSERT INTO F_ART (EANART,DESART,DEEART,DETART,DLAART,EQUART,CCOART,PCOART,PHAART,REFART,FUMART,UPPART,UMEART,CP1ART,CP2ART,CP3ART,CP4ART,CP5ART,NPUART,NIAART,DSCART,MPTART,UEQART,CAEART,CANART,FAMART,CODART
                 ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 $exec = $this->conn->prepare($ins);
                 $exec -> execute($producto);
@@ -913,6 +914,26 @@ class ProductsController extends Controller
             "insertados"=>$insertados
         ];
         return response()->json($res);
+    }
+
+    public function additionalsBarcode(Request $request){
+        $addbar = $request->addbarcodes;
+     
+        $ids = $request->ids;
+        $clientms =  "DELETE FROM F_EAN WHERE ARTEAN IN (".implode(",",$ids).")";
+        $exec = $this->conn->prepare($clientms);
+        $exec -> execute();
+            foreach($addbar as $con){
+                $clsd =[
+                    $con['ARTEAN'],
+                    $con['EANEAN']
+                ];
+            $inset="INSERT INTO F_EAN (ARTEAN,EANEAN) VALUES(?,?)";
+            $exec = $this->conn->prepare($inset);
+            $exec -> execute($clsd);
+        }
+        return response()->json("Generado Correctamente");
+     
     }
 
 }    
