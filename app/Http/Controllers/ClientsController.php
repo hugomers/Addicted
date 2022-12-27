@@ -75,6 +75,27 @@ class ClientsController extends Controller
 
         }
         return response()->json("Generado Correctamente");
-     
+    }
+
+    public function refreshLoyaltyCard(Request $request){
+        $tar = $request->tarjetas;
+        $del = "DELETE FROM T_TFI";
+        $exec = $this->conn->prepare($del);
+        $exec -> execute();
+        foreach($tar as $taget){
+            $ins = [
+                $taget['CODTFI'],
+                $taget['TTFTFI'],
+                $taget['IDETFI'],
+                $taget['CLITFI'],
+                $taget['FALTFI'],
+                $taget['FVATFI'],
+                $taget['TOTTFI']
+            ];
+            $insert = "INSERT INTO T_TFI (CODTFI,TTFTFI,IDETFI,CLITFI,FALTFI,FVATFI,TOTTFI) VALUES (?,?,?,?,?,?,?)";
+            $exec = $this->conn->prepare($insert);
+            $exec -> execute($ins);
+        }
+        return response()->json("Proceso Realizado");
     }
 }

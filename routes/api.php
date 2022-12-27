@@ -15,6 +15,7 @@ Route::prefix('providers')->group(function(){
 Route::prefix('clients')->group(function(){
     Route::post('/reply',[ClientsController::class,'replyClients']);
     Route::post('/conditionSpecial',[ClientsController::class,'conditionSpecial']);
+    Route::post('/refreshLoyaltyCard',[ClientsController::class,'refreshLoyaltyCard']);
 });
 
 Route::prefix('products')->group(function(){
