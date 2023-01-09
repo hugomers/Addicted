@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProvidersController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\AgentsController;
 
 
 
@@ -32,4 +33,9 @@ Route::prefix('products')->group(function(){
     Route::post('/replyProducts',[ProductsController::class,'replyProducts']);
     Route::post('/replyProductsPrices',[ProductsController::class,'replyProductsPrices']);
     Route::post('/additionalsBarcode',[ProductsController::class,'additionalsBarcode']);
+});
+
+Route::prefix('agents')->group(function(){
+    Route::get('/',[AgentsController::class,'index']);
+    Route::post('/replyAgents',[AgentsController::class,'replyAgents']);
 });
