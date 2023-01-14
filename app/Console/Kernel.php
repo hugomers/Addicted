@@ -168,7 +168,7 @@ class Kernel extends ConsoleKernel
                     echo "Se añadieron ".count($fact)." facturas";
                 }else{echo "No hay facturas que replicar bro";}    
             }
-        })->everyMinute();
+        })->everyMinute()->between('8:00','22:00');
     }
 
     /**

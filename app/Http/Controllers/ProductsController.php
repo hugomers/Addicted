@@ -29,35 +29,51 @@ class ProductsController extends Controller
 
     public function pairingProducts(Request $request){
         $fil = $request->pro;
-        $delete = "DELETE FROM F_ART WHERE CODART NOT IN (".implode(",",$fil).")";
-        $exec = $this->conn->prepare($delete);
+
+        $psfs = "SELECT CODART FROM F_ART";
+        $exec = $this->conn->prepare($psfs);
         $exec -> execute();
-        $delete = "DELETE FROM F_LTA WHERE ARTLTA NOT IN (".implode(",",$fil).")";
-        $exec = $this->conn->prepare($delete);
+        $profs=$exec->fetchall(\PDO::FETCH_ASSOC);
+        $colsTab = array_keys($profs[0]);//llaves de el arreglo 
+        foreach($profs as $raw){
+            foreach($colsTab as $col){ $raw[$col] = utf8_encode($raw[$col]); }
+            $cods[]="'".$raw['CODART']."'";
+        }
+        $dife = array_diff($cods,$fil);
+        $diferencia = array_values($dife);
+        if(count($diferencia)){
+        $deleteart = "DELETE FROM F_ART WHERE CODART  IN (".implode(",",$diferencia).")";
+        $exec = $this->conn->prepare($deleteart);
         $exec -> execute();
-        $delete = "DELETE FROM F_STO WHERE ARTSTO NOT IN (".implode(",",$fil).")";
-        $exec = $this->conn->prepare($delete);
+        $deletetar = "DELETE FROM F_LTA WHERE ARTLTA  IN (".implode(",",$diferencia).")";
+        $exec = $this->conn->prepare($deletetar);
         $exec -> execute();
+        $deletesto = "DELETE FROM F_STO WHERE ARTSTO  IN (".implode(",",$diferencia).")";
+        $exec = $this->conn->prepare($deletesto);
+        $exec -> execute();
+        }
 
         $proced = "SELECT CODART FROM F_ART";
         $exec = $this->conn->prepare($proced);
         $exec -> execute();
-        $fil=$exec->fetchall(\PDO::FETCH_ASSOC);
-        $colsTab = array_keys($fil[0]);//llaves de el arreglo 
-        foreach($fil as $row){
+        $profsd=$exec->fetchall(\PDO::FETCH_ASSOC);
+        $colsTab = array_keys($profsd[0]);//llaves de el arreglo 
+        foreach($profsd as $row){
             foreach($colsTab as $col){ $row[$col] = utf8_encode($row[$col]); }
             $codigo[]="'".$row['CODART']."'";
         }
+        $dife = array_diff($fil,$codigo);
+        $faltantes = array_values($dife);
 
         $alm = "SELECT CODALM FROM F_ALM";
         $exec = $this->conn->prepare($alm);
         $exec -> execute();
         $rowalm=$exec->fetchall(\PDO::FETCH_ASSOC);
 
-        $cedis = env('ACCESS_CEDIS');
+        $cedis = DB::table('stores')->where('_type',1)->where('id',1)->value('local_domain');
         $url = $cedis."/Diller/public/api/products/missing";
         $ch = curl_init($url);//inicio de curl
-        $data = json_encode(["products" => $codigo]);//se codifica el arreglo de los proveedores
+        $data = json_encode(["products" => $faltantes]);//se codifica el arreglo de los proveedores
         //inicio de opciones de curl
         curl_setopt($ch,CURLOPT_POSTFIELDS,$data);//se envia por metodo post
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
@@ -100,7 +116,6 @@ class ProductsController extends Controller
                         }catch (\PDOException $e){ die($e->getMessage());}
                     }
                 }
-
                 return response()->json($res);
             }
     }
