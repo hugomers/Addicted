@@ -20,7 +20,7 @@ Route::prefix('clients')->group(function(){
 });
 
 Route::prefix('products')->group(function(){
-    Route::get('/',[ProductsController::class,'index']);
+    Route::post('/',[ProductsController::class,'index']);
     Route::post('/pairing',[ProductsController::class,'pairingProducts']);
     Route::post('/replaceProducts',[ProductsController::class,'replaceProducts']);
     Route::post('/highProducts',[ProductsController::class,'highProducts']);

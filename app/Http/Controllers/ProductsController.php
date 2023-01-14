@@ -15,16 +15,25 @@ class ProductsController extends Controller
         }else{ die("$access no es un origen de datos valido."); }
     }
 
-    public function index(){//se envia articulos para su comparacion con cedis y mysql, aplica solo para sucursales con tipo de precio 2
-        $articulos=[];//contenedor de articulos
+    public function index(Request $request){//se envia articulos para su comparacion con cedis y mysql, aplica solo para sucursales con tipo de precio 2
+        // $articulos=[];//contenedor de articulos
+        $produ = $request->articulos;
         $proced = "SELECT CODART  FROM F_ART";//query para mostrar articulos
         $exec = $this->conn->prepare($proced);
         $exec -> execute();
         $fil=$exec->fetchall(\PDO::FETCH_ASSOC);
+        $cuantos = count($fil);
         foreach($fil as $row){//foreach de articulos
-            $articulos[]="'".$row['CODART']."'";//se obtiene el codigo de los articulos concatenads con comilla simple para su procesamiento
+            $articulos[]=$row['CODART'];//se obtiene el codigo de los articulos concatenads con comilla simple para su procesamiento
         }
-        return response()->json($articulos,200);
+        $dife = array_diff($produ,$articulos);
+        $diferencia = array_values($dife);
+        $res = [
+            "articulos"=>$cuantos,
+            "faltantes"=>$diferencia
+        ];
+
+        return response()->json($res,200);
     }
 
     public function pairingProducts(Request $request){
