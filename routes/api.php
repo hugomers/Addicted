@@ -37,5 +37,8 @@ Route::prefix('products')->group(function(){
 
 Route::prefix('agents')->group(function(){
     Route::get('/',[AgentsController::class,'index']);
-    Route::post('/replyAgents',[AgentsController::class,'replyAgents']);
+    // Route::post('/replyAgents',[AgentsController::class,'replyAgents']);
+    Route::post('/replyuser',[AgentsController::class,'replyUser']);
+    Route::post('/replyagents',[AgentsController::class,'replyAgents']);
+
 });

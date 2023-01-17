@@ -3,18 +3,26 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AgentsController extends Controller
 {
     public function __construct(){
         $access = env("ACCESS");//conexion a access de sucursal
         if(file_exists($access)){
+        try{  $this->con  = new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};charset=UTF-8; DBQ=".$access."; Uid=; Pwd=;");
+            }catch(\PDOException $e){ die($e->getMessage()); }
+        }else{ die("$access no es un origen de datos valido."); }
+
+        $access = env("GENERAL");//conexion a access de sucursal
+        if(file_exists($access)){
         try{  $this->conn  = new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};charset=UTF-8; DBQ=".$access."; Uid=; Pwd=;");
             }catch(\PDOException $e){ die($e->getMessage()); }
         }else{ die("$access no es un origen de datos valido."); }
     }
+   
 
-    public function replyAgents(Request $request){
+    public function index(Request $request){
         $depen = [];
         $agen = [];
         $agentes = $request->agentes;
@@ -122,4 +130,90 @@ class AgentsController extends Controller
 
         return response()->json($res);
     }
+
+    public function replyUser(Request $request){
+        $workpoint = env('WKP');
+        // return $workpoint;
+        $access = DB::table('stores')->where('id',$workpoint)->value('access_file');
+
+        $usu = $request->usuario;
+
+        $usuario = [
+            $usu['CODUSU'],
+            $usu['NOMUSU'],
+            $usu['CLAUSU'],
+            'FS'.$access,
+            $usu['GESUSU'],
+            $usu['CONUSU'],
+            $usu['LABUSU'],
+            $usu['ALMARTUSU'],
+            $usu['APPUSU'],
+            $usu['ALBUSU'],
+            $usu['FACUSU'],
+            $usu['PREUSU'],
+            $usu['PPRUSU'],
+            $usu['FREUSU'],
+            $usu['PCLUSU'],
+            $usu['RECUSU'],
+            $usu['ENTUSU'],
+            $usu['FABUSU'],
+            $usu['FRDUSU'],
+            $usu['IDIUSU'],
+            $usu['ELIUSU'],
+        ];
+      
+        $insertusu = "INSERT INTO F_USU (CODUSU,NOMUSU,CLAUSU,EMPUSU,GESUSU,CONUSU,LABUSU,ALMARTUSU,APPUSU,ALBUSU,FACUSU,PREUSU,PPRUSU,FREUSU,PCLUSU,RECUSU,ENTUSU,FABUSU,FRDUSU,IDIUSU,ELIUSU) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";    
+        $exec = $this->conn->prepare($insertusu);
+        $exec -> execute($usuario);
+
+        $permi = $request->permisos;
+        foreach($permi as $permiso){
+            $program = [
+                $permiso['CODCFG'],
+                $permiso['NUMCFG'],
+                $permiso['TEXCFG'],
+                $permiso['TIPCFG'],
+
+            ];
+            $insertpro = "INSERT INTO F_CFG (CODCFG,NUMCFG,TEXCFG,TIPCFG) VALUES (?,?,?,?)";
+            $exec = $this->conn->prepare($insertpro);
+            $exec -> execute($program);   
+        }
+
+        return response()->json("El usuario ".$usu['NOMUSU']." se inserto");
+
+    }
+
+    public function replyAgents(Request $request){
+        $age = $request->agente;
+
+        $agente = [
+            $age['CODAGE'],
+            $age['FALAGE'],
+            $age['NOMAGE'],
+
+        ];
+        $insertage = "INSERT INTO F_AGE (CODAGE,FALAGE,NOMAGE) VALUES (?,?,?)";
+        $exec = $this->con->prepare($insertage);
+        $exec -> execute($agente);
+
+
+        $dep = $request->dependiente;
+
+        $depe = [
+            $dep['CODDEP'],
+            $dep['NOMDEP'],
+            $dep['PERDEP'],
+            $dep['CLADEP'],
+            $dep['AGEDEP'],
+
+        ];
+    
+        $insertdep = "INSERT INTO T_DEP (CODDEP,NOMDEP,PERDEP,CLADEP,AGEDEP) VALUES (?,?,?,?,?)";
+        $exec = $this->con->prepare($insertdep);
+        $exec -> execute($depe);
+        return response()->json("El agente ".$dep['NOMDEP']." se inserto correctamente");
+    }
+
+
 }
