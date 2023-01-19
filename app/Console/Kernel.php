@@ -22,8 +22,8 @@ class Kernel extends ConsoleKernel
             }catch(\PDOException $e){ die($e->getMessage()); }
         }else{ die("$access no es un origen de datos valido."); }
 
-        $schedule->call(function (){
-            $workpoint = env('WORKPOINT');
+        $schedule->call(function (){ //replicador de ventas sucursales
+            $workpoint = env('WKP');
             $date = now()->format("Y-m-d");
             $sday = DB::table('sales')->whereDate('created_at',$date)->where('_store',$workpoint)->get();
             if(count($sday) == 0){
