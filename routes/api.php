@@ -6,7 +6,7 @@ use App\Http\Controllers\ProvidersController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\AgentsController;
-
+use App\Http\Controllers\WithdrawalsController;
 
 
 Route::prefix('providers')->group(function(){
@@ -40,5 +40,8 @@ Route::prefix('agents')->group(function(){
     // Route::post('/replyAgents',[AgentsController::class,'replyAgents']);
     Route::post('/replyuser',[AgentsController::class,'replyUser']);
     Route::post('/replyagents',[AgentsController::class,'replyAgents']);
+});
 
+Route::prefix('withdrawals')->group(function(){
+    Route::get('/',[WithdrawalsController::class,'replyWitdrawal']);
 });
