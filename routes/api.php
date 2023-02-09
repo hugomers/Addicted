@@ -45,3 +45,7 @@ Route::prefix('agents')->group(function(){
 Route::prefix('withdrawals')->group(function(){
     Route::get('/',[WithdrawalsController::class,'replyWitdrawal']);
 });
+
+Route::prefix('assist')->group(function(){
+    Route::get('/replyAssist',[AssistController::class,'replyAssist']);
+});
