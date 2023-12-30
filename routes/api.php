@@ -9,6 +9,7 @@ use App\Http\Controllers\AgentsController;
 use App\Http\Controllers\WithdrawalsController;
 use App\Http\Controllers\AssistController;
 use App\Http\Controllers\WarehousesController;
+use App\Http\Controllers\ResourcesController;
 
 
 Route::prefix('providers')->group(function(){
@@ -55,4 +56,8 @@ Route::prefix('assist')->group(function(){
 Route::prefix('warehouses')->group(function(){
     Route::post('/transferbw',[WarehousesController::class,'transferWarehouse']);
     Route::post('/consolidation',[WarehousesController::class,'consolidation']);
+});
+
+Route::prefix('resources')->group(function(){
+    Route::get('/ping',[ResourcesController::class,'ping']);
 });

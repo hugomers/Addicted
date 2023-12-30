@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
                 $fact=$exec->fetchall(\PDO::FETCH_ASSOC);
                 if($fact){
                     foreach($fact as $fs){
-                        $ptick[] = "'".$fs['TICKET']."'"; 
+                        $ptick[] = "'".$fs['TICKET']."'";
                         $client = DB::table('clients')->where('fs_id',$fs['CLIENTE'])->value('id');
                         $user = DB::table('users')->where('TPV_id',$fs['USUARIO'])->value('id');
                         $warehouse = DB::table('warehouses')->where('alias',$fs['ALMACEN'])->where('_store',$workpoint)->value('id');
@@ -52,7 +52,7 @@ class Kernel extends ConsoleKernel
                             "updated_at"=>now(),//->toDateTimeString(),
                             "_cash"=>$cash
                         ];
-                        $insert = DB::table('sales')->insert($facturas);        
+                        $insert = DB::table('sales')->insert($facturas);
                     }
                     $prday = "SELECT TIPLFA&'-'&CODLFA AS TICKET, ARTLFA AS ARTICULO, CANLFA AS CANTIDAD, PRELFA AS PRECIO, TOTLFA AS TOTAL, COSLFA AS COSTO FROM F_LFA WHERE TIPLFA&'-'&CODLFA IN (".implode(",",$ptick).")";
                     $exec = $this->conn->prepare($prday);
@@ -76,7 +76,7 @@ class Kernel extends ConsoleKernel
                     $exec -> execute();
                     $payfac=$exec->fetchall(\PDO::FETCH_ASSOC);
                     if($payfac){
-                        $colsTab = array_keys($payfac[0]);//llaves de el arreglo 
+                        $colsTab = array_keys($payfac[0]);//llaves de el arreglo
                         foreach($payfac as $paym){
                             foreach($colsTab as $col){ $paym[$col] = utf8_encode($paym[$col]); }
                             $salep = DB::table('sales')->where('num_ticket',$paym['TICKET'])->where('_store',$workpoint)->value('id');
@@ -94,7 +94,7 @@ class Kernel extends ConsoleKernel
                         $insert = DB::table('sale_collection_lines')->insert($pagos);
                         echo "Se añadieron ".count($fact)." facturas";
                     }
-                }else{echo "No hay facturas que replicar bro";}    
+                }else{echo "No hay facturas que replicar bro";}
             }else{
                 foreach($sday as $sale){
                     $fact[]="'".$sale->num_ticket."'";
@@ -105,7 +105,7 @@ class Kernel extends ConsoleKernel
                 $fact=$exec->fetchall(\PDO::FETCH_ASSOC);
                 if($fact){
                     foreach($fact as $fs){
-                        $ptick[] = "'".$fs['TICKET']."'";                    
+                        $ptick[] = "'".$fs['TICKET']."'";
                         $client = DB::table('clients')->where('fs_id',$fs['CLIENTE'])->value('id');
                         $user = DB::table('users')->where('TPV_id',$fs['USUARIO'])->value('id');
                         $warehouse = DB::table('warehouses')->where('alias',$fs['ALMACEN'])->where('_store',$workpoint)->value('id');
@@ -124,7 +124,7 @@ class Kernel extends ConsoleKernel
                             "updated_at"=>now(),//->toDateTimeString(),
                             "_cash"=>$cash
                         ];
-                        $insert = DB::table('sales')->insert($facturas);        
+                        $insert = DB::table('sales')->insert($facturas);
                     }
                     $prday = "SELECT TIPLFA&'-'&CODLFA AS TICKET, ARTLFA AS ARTICULO, CANLFA AS CANTIDAD, PRELFA AS PRECIO, TOTLFA AS TOTAL, COSLFA AS COSTO FROM F_LFA WHERE TIPLFA&'-'&CODLFA IN (".implode(",",$ptick).")";
                     $exec = $this->conn->prepare($prday);
@@ -148,7 +148,7 @@ class Kernel extends ConsoleKernel
                     $exec -> execute();
                     $payfac=$exec->fetchall(\PDO::FETCH_ASSOC);
                     if($payfac){
-                        $colsTab = array_keys($payfac[0]);//llaves de el arreglo 
+                        $colsTab = array_keys($payfac[0]);//llaves de el arreglo
                         foreach($payfac as $paym){
                             foreach($colsTab as $col){ $paym[$col] = utf8_encode($paym[$col]); }
                             $salep = DB::table('sales')->where('num_ticket',$paym['TICKET'])->where('_store',$workpoint)->value('id');
@@ -166,7 +166,7 @@ class Kernel extends ConsoleKernel
                         $insert = DB::table('sale_collection_lines')->insert($pagos);
                     }
                     echo "Se añadieron ".count($fact)." facturas";
-                }else{echo "No hay facturas que replicar bro";}    
+                }else{echo "No hay facturas que replicar bro";}
             }
         })->everyMinute()->between('8:00','22:00');
 
@@ -175,90 +175,90 @@ class Kernel extends ConsoleKernel
             $msql = [];
             $workpoint = env('WKP');
             try{
-                $sto  = "SELECT * FROM (SELECT 
+                $sto  = "SELECT * FROM (SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LFA ON F_LFA.ARTLFA  = F_STO.ARTSTO)
                     INNER JOIN F_FAC ON ( F_FAC.TIPFAC&'-'&F_FAC.CODFAC = F_LFA.TIPLFA&'-'&F_LFA.CODLFA AND F_FAC.FECFAC =DATE()) )
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LFR ON F_LFR.ARTLFR  = F_STO.ARTSTO)
                     INNER JOIN F_FRE ON (F_FRE.TIPFRE&'-'&F_FRE.CODFRE = F_LFR.TIPLFR&'-'&F_LFR.CODLFR  AND F_FRE.FECFRE =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LEN ON F_LEN.ARTLEN  = F_STO.ARTSTO)
                     INNER JOIN F_ENT ON (F_ENT.TIPENT&'-'&F_ENT.CODENT = F_LEN.TIPLEN&'-'&F_LEN.CODLEN  AND F_ENT.FECENT =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LFD ON F_LFD.ARTLFD  = F_STO.ARTSTO)
                     INNER JOIN F_FRD ON (F_FRD.TIPFRD&'-'&F_FRD.CODFRD = F_LFD.TIPLFD&'-'&F_LFD.CODLFD  AND F_FRD.FECFRD =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LAL ON F_LAL.ARTLAL  = F_STO.ARTSTO)
                     INNER JOIN F_ALB ON (F_ALB.TIPALB&'-'&F_ALB.CODALB = F_LAL.TIPLAL&'-'&F_LAL.CODLAL  AND F_ALB.FECALB =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LFB ON F_LFB.ARTLFB  = F_STO.ARTSTO)
                     INNER JOIN F_FAB ON (F_FAB.TIPFAB&'-'&F_FAB.CODFAB = F_LFB.TIPLFB&'-'&F_LFB.CODLFB  AND F_FAB.FECFAB =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LSA ON F_LSA.ARTLSA  = F_STO.ARTSTO)
                     INNER JOIN F_SAL ON (F_SAL.CODSAL = F_LSA.CODLSA  AND F_SAL.FECSAL =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LTR ON F_LTR.ARTLTR  = F_STO.ARTSTO)
                     INNER JOIN F_TRA ON (F_TRA.DOCTRA = F_LTR.DOCLTR  AND F_TRA.FECTRA =DATE()))
-                    UNION 
-                    SELECT 
+                    UNION
+                    SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM (F_STO
                     INNER JOIN F_CIN ON (F_CIN.ARTCIN  = F_STO.ARTSTO AND F_CIN.FECCIN = DATE()))
-                    UNION SELECT 
+                    UNION SELECT
                     F_STO.ARTSTO,
                     F_STO.ALMSTO,
                     F_STO.ACTSTO,
-                    F_STO.DISSTO 
+                    F_STO.DISSTO
                     FROM ((F_STO
                     INNER JOIN F_LFC ON F_LFC.ARTLFC  = F_STO.ARTSTO)
                     INNER JOIN F_FCO ON (F_FCO.CODFCO = F_LFC.CODLFC  AND F_FCO.FECFCO =DATE()))) ORDER BY F_STO.ALMSTO ASC,  F_STO.ARTSTO DESC";
@@ -267,7 +267,7 @@ class Kernel extends ConsoleKernel
                 $stocks=$exec->fetchall(\PDO::FETCH_ASSOC);
             }catch (\PDOException $e){ die($e->getMessage());}
             if($stocks){
-                foreach($stocks as $stock){  
+                foreach($stocks as $stock){
                     $almas[]=$stock['ARTSTO'];
                     $articulos = [
                     'code'=>strtoupper($stock['ARTSTO']),
@@ -277,7 +277,7 @@ class Kernel extends ConsoleKernel
                     ];
                     $factusol[]=$articulos;
                 }
-    
+
                 $stockms = DB::table('product_stock AS PS')
                 ->join('warehouses AS W','W.id','PS._warehouse')
                 ->join('products AS P','P.id','PS._product')
@@ -294,19 +294,19 @@ class Kernel extends ConsoleKernel
                         '_current'=>$mss->_current,
                         'available'=>$mss->available
                     ];
-                    $msql[]=$arti;          
+                    $msql[]=$arti;
                 }
-    
-    
+
+
                 $out = array_udiff($factusol,$msql, function($a,$b){
                     if($a == $b){
                         return  0;
-                        
+
                     }else{
                         return ($a > $b) ? 1 : -1;
                     }
                 });
-    
+
                 if($out){
                     foreach($out as $mod){
                         $cool = [
@@ -323,21 +323,21 @@ class Kernel extends ConsoleKernel
                     $mood[] = $mod['code'];
                     }
                     $res = count($mood);
-            
-    
+
+
                     echo "se actualizaron ".$res." filas del stock";
                 }else{echo "No hay stock para replicar";}
-    
+
             }else{echo "No hay stock para replicar";}
-    
+
         })->everyMinute()->between('8:00','22:00');
 
         $schedule->call(function (){//replicador de retiradas de la sucursal
             $workpoint = env('WKP');
             $date = now()->format("Y-m-d");
-    
+
             $rday = DB::table('withdrawals')->whereDate('created_at',$date)->where('_store',$workpoint)->get();
-    
+
             if(count($rday) == 0){
                 $with = "SELECT CODRET AS CODE, CAJRET AS TERMI, CONRET AS DESCRIP, IMPRET AS IMPORTE, PRORET AS PROVI, IIF( HORRET = '', FORMAT(FECRET,'YYYY-mm-dd')&' '&'00:00:00' ,FORMAT(FECRET,'YYYY-mm-dd')&' '&FORMAT(HORRET,'HH:mm:ss')) AS CREACION FROM F_RET WHERE FECRET = DATE()";
                 $exec = $this->conn->prepare($with);
@@ -358,9 +358,9 @@ class Kernel extends ConsoleKernel
                         "updated_at"=>now(),
                         "_provider"=>$provider
                     ];
-                    $insert = DB::table('withdrawals')->insert($insret);  
+                    $insert = DB::table('withdrawals')->insert($insret);
                 }
-    
+
                 return response()->json($insret);
                 }else{return response()->json("No hay retiradas para replicar");}
             }else{
@@ -386,9 +386,9 @@ class Kernel extends ConsoleKernel
                         "updated_at"=>now(),
                         "_provider"=>$provider
                     ];
-                    $insert = DB::table('withdrawals')->insert($insret);  
+                    $insert = DB::table('withdrawals')->insert($insret);
                 }
-    
+
                 return response()->json($insret);
                 }else{return response()->json("No hay retiradas para replicar");}
             }
